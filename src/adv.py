@@ -1,6 +1,7 @@
 from room import Room
 from player import Player
 import textwrap
+from item import Item
 
 
 # Declare all the rooms
@@ -24,6 +25,14 @@ chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
 
+item = {
+    'Thunderfury': Item('Thunderfury', 'The blessed blade hums and shines in the dull light'),
+    'QuelSerrar': Item('QuelSerrar', 'The beautiful weapon appears to be crafted by artisans long since departed'),
+    'Ashkandi': Item('Ashkandi', 'One of the most powerful swrods sits idly on the ground'),
+    'DarkEdgeofInsanity': Item('DarkEdgeofInsanity', 'Cthun weeps!!!'),
+    'CorruptedAshbringer': Item('CorruptedAshbringer', 'A weapon designed for a holy Paladin sits before you')
+}
+# print(item['Thunderfury'].description)
 
 # Link rooms together
 
@@ -36,13 +45,21 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
-#
+# add items to rooms
+room["outside"].item = [item['Thunderfury']]
+room["foyer"].item = [item['QuelSerrar']]
+room["overlook"].item = [item['Ashkandi']]
+room["narrow"].item = [item['DarkEdgeofInsanity']]
+room["treasure"].item = [item['CorruptedAshbringer']]
+
+# #
 # Main
 #
 
 # Make a new player object that is currently in the 'outside' room.
 user_name = input("Join the fight against the Horde, enter your name: ")
 player = Player(user_name, room['outside'])
+# room = Room()
 
 print("player test:", player)
 
@@ -53,39 +70,66 @@ choices = ['n', 'e', 's', 'w']
 # Write a loop that:
 while True:
 
-    cmd = input("choose your Path -> ")
+    cmd = input(f"choose your Path -> ").split(' ')
+    # new_cmd = cmd.capitalize()
 
-    print(f"You Have Moved  {cmd} ")
+    print(f"You Have Chosen to {cmd} ")
 
-    if cmd == 'n':
+    if cmd[0] == 'n':
         if player.current_location.n_to != None:
             player.current_location = player.current_location.n_to
         else:
             print(f"The Horde is blocking your route North turn back.")
         # print(f"You Gentley Step North")
-    elif cmd == 'e':
+    elif cmd[0] == 'e':
         if player.current_location.e_to != None:
             player.current_location = player.current_location.e_to
         else:
             print(f"The Horde is blocking your route East turn back.")
         # print(f"You Silently Slide East")
-    elif cmd == 's':
+    elif cmd[0] == 's':
         if player.current_location.s_to != None:
             player.current_location = player.current_location.s_to
         else:
             print(f"The Horde is blocking your route South turn back.")
         # print(f"You Cautiously Move South")
-    elif cmd == 'w':
+    elif cmd[0] == 'w':
         if player.current_location.w_to != None:
             player.current_location = player.current_location.w_to
         else:
             print(f"The Horde is blocking your route West turn back.")
         # print(f"You Sneak to the West")
-    elif cmd == 'q':
-        print('Goodbye!')
+    elif cmd[0] == 'look':
+        for item in player.current_location.item:
+            print(f" your eyes do not fail you, and you notice the {item}")
+        # if player.current_location.item != None
+        # print(f"you are looking around and see")
+        # else:
+        #     print(f"you look around and see nothing")
+
+    elif cmd[0] == 'take':
+        try:
+            player.collect_item(cmd[1])
+        except:
+            print(f"please enter an item to take ")
+    elif cmd[0] == 'drop':
+        try:
+            player.drop_item(cmd[1])
+        except:
+            print(f"please select an item to drop ")
+
+    elif cmd[0] == "inv":
+        if len(player.items) > 0:
+            for item in player.items:
+                print(f" You are currently holding {item}")
+        else:
+            print("You're backpack is empty")
+
+    elif cmd[0] == 'q':
+        print('Goodbye!, Thanks For Playing')
         break
     else:
-        print(f"invalid entry, n, e, s, w, q are only valid inputs")
+        print(f"invalid entry, n, e, s, w, q, look, take, drop are only valid inputs")
 
     # * Prints the current room name
 
@@ -96,6 +140,8 @@ while True:
     print(textwrap.wrap(player.current_location.description))
 
     # * Waits for user input and decides what to do.
+    # for item in player.current_location.item:
+    #     print(f" your eyes do not fail you, and you notice the {item}")
 
     #
     # If the user enters a cardinal direction, attempt to move to the room there.
